@@ -1,0 +1,57 @@
+import pandas as pd
+import numpy as np
+
+X=np.array(([2,9],[1,5],[3,6]),dtype=float)
+y=np.array(([92],[86],[89]),dtype=float)
+X=X/np.amax(X,axis=0)
+y=y/100
+
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
+
+def derivatives_sigmoid(x):
+    return x*(1-x)
+
+epoch=5
+lr=0.1
+
+inp=2
+hn=3
+on=1
+
+wh=np.random.uniform(size=(inp,hn))
+bh=np.random.uniform(size=(1,hn))
+wout=np.random.uniform(size=(hn,on))
+bout=np.random.uniform(size=(1,on))
+
+for i in range(epoch):
+    
+    #forward
+    hinp1=np.dot(X,wh)
+    hinp=hinp1+bh
+    hlayer=sigmoid(hinp)
+    oinp1=np.dot(hlayer,wout)
+    oinp=oinp1+bout
+    output=sigmoid(oinp)
+    
+    #backward
+    EO=y-output
+    EO1=derivatives_sigmoid(output)
+    EO2=EO*EO1
+    EH=EO2.dot(wout.T)
+    EH1=derivatives_sigmoid(hlayer)
+    EH2=EH*EH1
+    
+    wout+=hlayer.T.dot(EO2)*lr
+    wh+=X.T.dot(EH2)*lr
+    
+    print('epoch----',i+1,'starts')
+    print('INput:\n'+str(X))
+    print('Actual Output:\n'+str(y))
+    print('Predicted Output:\n',output)
+    print('epoch----',i+1,'ends')
+    
+    
+print('INput:\n'+str(X))
+print('Actual Output:\n'+str(y))
+print('Predicted Output:\n',output)
