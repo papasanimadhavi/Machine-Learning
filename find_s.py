@@ -1,6 +1,7 @@
 #1 find-s 
 import numpy as np
 import pandas as pd
+
 df=pd.read_csv(r'C:\Users\hp\OneDrive\Desktop\ENJOYSPORT.csv')
 print(df)
 
