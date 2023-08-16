@@ -1,0 +1,122 @@
+import pandas as pd
+import math
+import numpy as np
+
+data = pd.read_csv(r'C:\Users\hp\OneDrive\Desktop\play_tennis.csv')
+features = [feat for feat in data]
+features.remove('play')
+print(features)
+
+class Node:
+    def __init__(self):
+        self.children=[]
+        self.value=""
+        self.isLeaf=False
+        self.pred=""
+
+def entropy(examples):
+    print("entropy function")
+    pos=0.0
+    neg=0.0
+    for _, row in examples.iterrows():
+        print("each row:",row)
+        if row['play']=="Yes":
+            pos+=1
+        else:
+            neg+=1
+    if pos==0.0 or neg==0.0: #if all negative or all positive return 0.0 entropy
+        return 0.0
+    else:
+        p=pos/(pos + neg)
+        n=neg/(pos + neg)
+        print("poistives",p)
+        print("negatives:",n)
+        return(-(p*math.log(p,2))-(n*math.log(n,2)))
+
+def info_gain(examples, attr):
+    # print("infogain attr in inf:",attr)
+    uniq=np.unique(np.array(examples[attr]))
+   # print ("unique in info_gain \n",uniq)
+    gain=entropy(examples)
+    print ("entropy in gain :\n",gain)
+    for u in uniq:
+        subdata = examples[examples[attr]==u]
+        #print ("\n",subdata)
+        sub_e=entropy(subdata)
+        gain=gain-((float(len(subdata))/float(len(examples))) * sub_e)
+        #print ("\n",gain)
+    return gain
+
+def ID3(examples,attrs):
+    root = Node()
+    max_gain=0.0
+    max_feat=""
+    #print ("\n",examples)
+    for feature in attrs:
+        #print("feature is:",feature)
+        gain=info_gain(examples,feature)
+        #print("infogainin ID3:",gain)
+        if gain>max_gain:
+            max_gain=gain
+            max_feat=feature
+    #print("max_feat",max_feat)
+    root.value=max_feat
+    #print ("\nMax feature attr",max_feat)
+    #print("examples_feature")
+    print(examples)
+    uniq = np.unique(examples[max_feat])
+    #print("uniq examples")
+    print(uniq)
+    #print ("\n",uniq)
+    for u in uniq:
+        print("feature:",max_feat,u)
+        subdata = examples[examples[max_feat]==u]
+        print ("\n",subdata)
+        if entropy(subdata) == 0.0:
+            newNode = Node()
+            newNode.isLeaf=True
+            newNode.value=u
+            newNode.pred=np.unique(subdata["play"])
+            root.children.append(newNode)
+        else:
+            print("dummy node i.e not true or false")
+            dummyNode = Node()
+            dummyNode.value = u
+            new_attrs = attrs.copy()
+            #print("in dummmy",new_attrs)
+            new_attrs.remove(max_feat)
+            child = ID3(subdata, new_attrs)
+            dummyNode.children.append(child)
+            root.children.append(dummyNode)
+
+    return root
+
+def printTree(root:Node, depth=0):
+    for i in range(depth):
+        print("\t", end="")
+    print(root.value, end="")
+    if root.isLeaf:
+        print("->", root.pred)
+    print()
+    for child in root.children:
+        printTree(child,depth+1)
+
+
+def classify(root,new):
+    for child in root.children:
+        if child.value==new[root.value]:
+            if child.isLeaf:
+                print ("Predicted Label for new example", new," is:", child.pred)
+                exit
+            else:
+                classify(child.children[0],new)
+
+
+root=ID3(data,features)
+
+print("Decision Tree is:")
+printTree(root)
+print ("------------------")
+
+new ={'outlook':'Sunny','temperature':'Hot','humidity':'Normal','wind':'Strong'}
+classify(root,new)
