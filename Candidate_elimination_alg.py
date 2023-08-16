@@ -1,150 +1,55 @@
-#Candidate-elimination algorithm
-
+#2 candidate -elimination alg
 import numpy as np
 import pandas as pd
+df=pd.read_csv(r'C:\Users\hp\OneDrive\Desktop\ENJOYSPORT.csv')
+print(df)
 
-#function-1
-def generalize(b,a):
-    for i in range(0,len(b)):
-        if b[i]!=a[i]:
-            b[i]='q'
-        else:
-            b[i]=a[i]
-        
-    return b
+concepts=np.array(df.iloc[:,0:-1])
+target=np.array(df.iloc[:,-1])
 
-#function-2
-def specialize(c,d,f):
-    for i in range(0,len(c)):
-        if d[i]!=f[i]:
-            c[i][i]=d[i]
-        else:
-            c[i][i]='q'
-        
-    return c
-
-#function-3
-def simplify_g(g1):
-  g2=[]
-  o=len(g1[0])
-  
-  for i in g1:
-    c=0
-    for j in i:
-      if j=='q':
-        c+=1
-    if c==o:
-      #g1.remove(i)
-      g2.append(i)
-
-  
-  g3=[]
-  for i in g1:
-    for j in g2:
-      if i==j:
-        continue
-      else:
-        g3.append(i)
-        break
-
-  return g3
-
-#function-4
-def len_of_s(s1):
-  n=0
-  for i in s1:
-      if i!='q':
-          n=n+1
-
-  return n
-
-#function-5
-def len_of_g(g1):
-  m=0
-  for i in g1:
-      for j in i:
-          if j!='q':
-              m=m+1  
-          break 
-  return m     
-
-#function-6
-def version_space(s1):
- 
-  s2=[]
-  for i in l:
-    for j in range(len(s1)):
-      if s1[j]!='q':
-        str1=s1[j]
-        s1[j]='q'
-        if len_of_s(s1)==i:
-          print(s1)
-          s2.append(s1)
-        s1[j]=str1
-
-  return s2
-
-#source code
-
-d=pd.DataFrame(pd.read_excel(r'/content/temperature.xlsx'))
-print(d)
-
-k=np.array(d)
-print(k)
-
-t=k[:,-1]
-print(t)
-
-k1=np.array(k[0:len(k),0:-1])
-print(k1)
-
-n=len(k1[0])
-s=[]
-for i in range(n):
-  s.append(0)
-print(s)
-g=[]
-for i in range(n):
-  g1=[]
-  for j in range(n):
-    g1.append('q')
-  g.append(g1)
-print(g)
-
-s1=s
-g1=[[]]
-for i in range(0,len(k1)):
-    if t[i]=='yes':
-        s1=generalize(s1,k1[i])
-    else:
-        g1=specialize(g,s1,k1[i])
-    print(s1)
-    print("\n")
-    print(g1)
-    print("\n")
+def learn(concepts,target):
+    s=concepts[0].copy()
     
+    g=[['?' for i in range(len(s))] for i in range(len(s))]
     
-s1=s
-g1=[[]]
-for i in range(0,len(k1)):
-    if t[i]=='yes':
-        s1=generalize(s1,k1[i])
-    else:
-        g1=specialize(g,s1,k1[i])
-print(s1)
-print("\n")
-print(g1)
-print("\n")
+    for i,h in enumerate(concepts):
+        
+        if target[i]==1:
+            
+            for x in range(len(s)):
+                if h[x]!=s[x]:
+                    g[x][x]='?'
+                    s[x]='?'
+        if target[i]==0:
+            for x in range(len(s)):
+                if h[x]!=s[x]:
+                    g[x][x]=s[x]
+                else:
+                    g[x][x]='?'
+    
+    indices=[i for i,val in enumerate(g) if val==['?','?','?','?','?','?']]
+    for i in indices:
+        g.remove(['?','?','?','?','?','?'])
+        
+    return s,g
 
-g1=simplify_g(g1)
-print(g1)
+s_final,g_final=learn(concepts,target)
+def version_space(s,g):
+    vs=[]
+    for i in g:
+        for j in range(len(i)):
+            if i[j]=='?' and s[j]!='?':
+                m=i[:]
+                m[j]=s[j]
+                if m not in vs:
+                    vs.append(m)
+    return vs
 
-l=[]
-n=len_of_s(s1)
-m=len_of_g(g1)
-for i in range(m+1,n):
-  l.append(i)
-print(l)
-
-s3=version_space(s1)
-print(s3)
+r=[]
+r.append(s_final)
+r1=version_space(s_final,g_final)
+r.append(r1)
+r.append(g_final)
+print("Specific hypothesis:",s_final)
+print("General Hypothesis:",g_final)
+print("Version_space",r)
