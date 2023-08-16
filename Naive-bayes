@@ -1,9 +1,10 @@
 #3 Naive - Bayes 
 
 import numpy as np
+from sklearn.metrics import accuracy_score
 import pandas as pd
 df=pd.read_csv(r'C:\Users\hp\OneDrive\Desktop\play_tennis.csv')
-x_train=df[:9]
+x_train=df[:10]
 x_test=df[10:]
 cy1=x_train.loc[x_train['play']=='Yes'].index.to_list()
 cy=len(cy1)
@@ -13,7 +14,8 @@ cn1=x_train.loc[x_train['play']=='No'].index.to_list()
 cn=len(cn1)
 zn1=x_train.index.to_list()
 z=len(zn1)
-
+print(cy1)
+print(cn1)
 
 cls=df.columns
 d={}
@@ -42,22 +44,27 @@ need.pop()
 #need.pop()
 correct=0
 wrong=0
-
-
+print(need)
+l=[]
 for row in x_test.index:
     for col in need:
         now=df.loc[row,col]
         pyes*=d[col][now][0]
         pno*=d[col][now][1]
     if pyes>pno:
+        l.append('Yes')
         if df.loc[row,'play']=='Yes':
             correct+=1
         else:
             wrong+=1
     else:
+        l.append('No')
         if df.loc[row,'play']=='No':
             correct+=1
         else:
             wrong+=1
         
-print((correct/len(x_test))*100)
+print((correct/(correct+wrong))*100)
+print(x_test)
+print(l)
+print(accuracy_score(x_test['play'],l))
